@@ -9,7 +9,7 @@ LEG = src/leg_simu.o
 OFILES = $(MAIN) $(ROBOT) $(LEG)
 
 #data FILES
-DATA = dataOut/angles.txt
+DATA = dataOut/FL_coord.csv dataOut/FR_coord.csv dataOut/RL_coord.csv dataOut/RR_coord.csv
 
 #FINAL GOAL
 EXEC = simu

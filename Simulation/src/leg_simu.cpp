@@ -3,7 +3,6 @@
 #include <math.h>
 #include <iostream>
 
-using namespace std;
 leg_simu::leg_simu(){
 
 }
@@ -21,9 +20,9 @@ leg_simu::leg_simu(int *pin, bool orientation){
 	}
 
 	// Buffer initialization with initiation position:
-	_coord_buff[0] = INIT_X;
-	_coord_buff[1] = INIT_Y;
-	_coord_buff[2] = INIT_Z;
+	_init_coord_buff[0] = INIT_X;
+	_init_coord_buff[1] = INIT_Y;
+	_init_coord_buff[2] = INIT_Z;
 
 	float R = sqrt(_coord_buff[0]*_coord_buff[0]+_coord_buff[1]*_coord_buff[1]);
 
@@ -42,20 +41,20 @@ leg_simu::leg_simu(int *pin, bool orientation){
 leg_simu::~leg_simu(){}
 
 // Readers:
-float* leg_simu::coordBuff_read(){
+std::array <float, 3> leg_simu::coordBuff_read(){
 	return this->_coord_buff;
 }
 
-float* leg_simu::initCoordBuff_read(){
+std::array <float, 3> leg_simu::initCoordBuff_read(){
 	return this->_init_coord_buff;
 }
 
 
-float* leg_simu::angleBuff_read(){
+std::array <float, 3> leg_simu::angleBuff_read(){
 	return this->_angle_buff;
 }
 
-int* leg_simu::registerBuff_read(){
+std::array <int, 3> leg_simu::registerBuff_read(){
 	return this->_register_buff;
 }
 
@@ -71,40 +70,36 @@ int leg_simu::vSpeed_read(){
 	return this->_v_speed;
 }
 
-float *leg_simu::ytraj_read(){
+std::vector <float> leg_simu::ytraj_read(){
 	return this->_ytraj;
 }
 
-float *leg_simu::ztraj_read(){
+std::vector <float> leg_simu::ztraj_read(){
 	return this->_ztraj;
 }
 
 // Writers:
-void leg_simu::coordBuff_write(float *coordinates){
+void leg_simu::coordBuff_write(std::array <float, 3> coordinates){
 	for(int i=0; i<3; i++){
-		_coord_buff[i] = *coordinates;
-		coordinates++;
+		_coord_buff[i] = coordinates[i];
 	}
 }
 
-void leg_simu::initCoordBuff_write(float *initCoord){
+void leg_simu::initCoordBuff_write(std::array <float, 3> initCoord){
 	for(int i=0; i<3; i++){
-		_init_coord_buff[i] = *initCoord;
-		initCoord++;
+		_init_coord_buff[i] = initCoord[i];
 	}
 }
 
-void leg_simu::angleBuff_write(float *angles){
+void leg_simu::angleBuff_write(std::array <float, 3> angles){
 	for(int i=0; i<3; i++){
-		_coord_buff[i] = *angles;
-		angles++;
+		_coord_buff[i] = angles[i];
 	}
 }
 
-void leg_simu::registerBuff_write(int *regval){
+void leg_simu::registerBuff_write(std::array <int, 3> regval){
 	for(int i=0; i<3; i++){
-		_coord_buff[i] = *regval;
-		regval++;
+		_coord_buff[i] = regval[i];
 	}
 }
 
@@ -123,123 +118,122 @@ void leg_simu::vSpeed_write(int vSpeed){
 	_v_speed = vSpeed;
 }
 
-void leg_simu::ytraj_write(float *ytraj){
+void leg_simu::ytraj_write(std::vector <float> ytraj){
 	_ytraj = ytraj;
 }
 
-void leg_simu::ztraj_write(float *ztraj){
+void leg_simu::ztraj_write(std::vector <float> ztraj){
 	_ztraj = ztraj;
 }
+
+// cleaner
+void leg_simu::ytraj_clear(){
+	this->_ytraj.clear();
+}
+
+void leg_simu::ztraj_clear(){
+	this->_ztraj.clear();
+}
+
 // Methods
 /* conv2angle:
 // This function is used to convert the Cartesian coordinates to angles in the leg coordinates->
 // The leg coordinates are given by the 3 servo-motors of the leg->
 // First coordinate is the body-hip link, 2nd is the hip-femur link, third is femur-tibia link->
 */
-float *leg_simu::conv2angle(float *cartesian){
-	float angle[3]={90, 90, 90};
+std::array <float, 3> leg_simu::conv2angle(float *cartesian){
+	std::array <float, 3> angle = {90, 90, 90};
 	float R = sqrt(_coord_buff[0]*_coord_buff[0]+_coord_buff[1]*_coord_buff[1]);
 
 	angle[0] = acos((LENGTH_A*LENGTH_A+LENGTH_B*LENGTH_B-LENGTH_C*LENGTH_C)/(2*LENGTH_A*LENGTH_B));
 	angle[1] = atan(this->_coord_buff[2]/(R-LENGTH_A))+acos((LENGTH_B*LENGTH_B+this->_coord_buff[2]*this->_coord_buff[2]+(R-LENGTH_A)*(R-LENGTH_A)-LENGTH_C*LENGTH_C)/(2*LENGTH_B*sqrt(this->_coord_buff[2]*this->_coord_buff[2]+(R-LENGTH_A)*(R-LENGTH_A))));
 	angle[2] = acos((LENGTH_B+LENGTH_C-this->_coord_buff[2]*this->_coord_buff[2]-(R-LENGTH_A)*(R-LENGTH_A))/(2*LENGTH_B*LENGTH_C));
 
-	float *a = angle;
-	return a;
+	return angle;
 }
 
-int *leg_simu::conv2reg(float *angle){
-	int regVal[3];
+std::array <int, 3> leg_simu::conv2reg(float *angle){
+	std::array <int, 3> regVal;
 	for(int i=0; i<3; i++){
 		regVal[i] = MIN_REG+ *angle /180*(MAX_REG-MIN_REG); ;//// COMPLETER AVEC LA VALEUR DE REGISTRE CORRESPONDANTE
 		angle++;
 	}
-	int *r = regVal;
-	return r;
+
+	return regVal;
 }
 
-void leg_simu::saveCoord(string file, int iter){
-/*
-	string titreReg = "regData_";
-	titreReg += to_string(this->_servoPin[0]);
-	titreReg += ".txt";
-
-  ofstream saveReg;
-  saveReg.open(titreReg);
-
-	int *regData = this->registerBuff_read();
-	for (int i=0; i<3; i++){
-    if (i==0)
-      save << to_string(iter) << "  ";
-    save << *regData <<"  ";
-    regData++;
-    if (i==2)
-      save << "\n";
-  }
-	saveReg.close;
-
-  string titreAng = "angData_";
-  titreAng += to_string(this->_servoPin[0]);
-  titreAng += ".txt";
-
-	ofstream saveAng;
-  saveAng.open(titreAng);
-
-  float *angData = this->angleBuff_read();
-  for (int i=0; i<3; i++){
-    if (i==0)
-      save << to_string(iter) << "  ";
-    save << *angData << " ";
-    angData++;
-    if (i==2)
-      save << "\n";
-  }
-	saveAng.close;
-
-  string titreCoo = "cooData_";
-  titreCoo += to_string(this->_servoPin[0]);
-  titreCoo += ".txt";
-
-	ofstream saveCoo;
-  saveCoo.open(titreCoo);
-
-  float *cooData = this->coordBuff_read();
-  for (int i=0; i<3; i++){
-    if (i==0)
-      save << to_string(iter) << "  ";
-    save << *cooData << " ";
-    cooData++;
-    if (i==2)
-      save << "\n";
-  }
-	saveCoo.close;*/
+void leg_simu::saveCoord(std::fstream &file){
+	int nbr_elem =_ytraj.size();
+	for(int i=0; i<nbr_elem; i++){
+			file<<INIT_X<<","<<this->_ytraj.at(i)<<","<<this->_ztraj.at(i)<<"\n";
+	}
 }
 
-void leg_simu::calctraj(float Zmax, int samples){
+void leg_simu::calctraj(int choice){
 	// We want this function to return an array of x and y coordinates of the traj to reach
-	float y[samples];
-	float z[samples];
 
-	float l_gap = this->_init_coord_buff[2] - this->_coord_buff[2];
-	if (l_gap < 0){l_gap=-l_gap;}
+	float l_gap = this->_init_coord_buff[1] - this->_coord_buff[1];
+	// if the leg needs to reach a point forward, direction = 1, 0 otherwise.
+	bool direction = 0;
 
-	float y_gap;
-	if (_init_coord_buff[2]<_coord_buff[2])
-		y_gap = _init_coord_buff[2] + l_gap/2;
-	else
-		y_gap = _init_coord_buff[2] - l_gap/2;
-
-	if (y_gap < 0){y_gap=-y_gap;}
-
-	float ytraj[samples];
-	float ztraj[samples];
-
-	for(int i = 0; i<samples; i++){
-		ytraj[i] = -l_gap/2 + i*l_gap/(samples-1);
-		ztraj[i] = Zmax-(2*Zmax/l_gap)*(2*Zmax/l_gap)*ytraj[i]*ytraj[i];
-		ytraj[i] = ytraj[i] - y_gap;
+	if (l_gap < 0){
+		l_gap=-l_gap;
+		direction = 1;
 	}
 
-	this->_ytraj=ytraj;
-	this->_ztraj=ztraj;
+	float y_gap;
+	if (_init_coord_buff[1]<_coord_buff[1])
+		y_gap = _init_coord_buff[1] + l_gap/2;
+	else
+		y_gap = _init_coord_buff[1] - l_gap/2;
+
+	//if (y_gap < 0){y_gap=-y_gap;}
+
+	std::vector<float> ytraj;
+	std::vector<float> ztraj;
+	if(choice == PARABOLA){
+		if (direction == 1){
+			for(int i = 0; i<LEG_RES_TRAJ; i++){
+				ytraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1));
+
+				ztraj.push_back(HIGH_Z+(-50-HIGH_Z)/(y_gap*y_gap)*ytraj[i]*ytraj[i]);
+				ytraj[i] = ytraj[i] + y_gap;
+			}
+		}
+		else{
+			for(int i = LEG_RES_TRAJ-1; i>=0; i--){
+				ytraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1));
+
+				ztraj.push_back(HIGH_Z+(-50-HIGH_Z)/(y_gap*y_gap)*ytraj[LEG_RES_TRAJ-1-i]*ytraj[LEG_RES_TRAJ-1-i]);
+				ytraj[LEG_RES_TRAJ-1-i] = ytraj[LEG_RES_TRAJ-1-i] + y_gap;
+			}
+		}
+	}
+
+	if(choice == FREEZE_Z){
+		if (direction == 1){
+			for(int i = 0; i<LEG_RES_TRAJ; i++){
+				ytraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1) + y_gap);
+
+				ztraj.push_back(_init_coord_buff[2]);
+			}
+		}
+		else{
+			for(int i = LEG_RES_TRAJ-1; i>=0; i--){
+				ytraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1) + y_gap);
+
+				ztraj.push_back(_init_coord_buff[2]);
+			}
+		}
+	}
+
+	this->_ytraj.insert(_ytraj.end(), ytraj.begin(), ytraj.end());
+	this->_ztraj.insert(_ztraj.end(), ztraj.begin(), ztraj.end());
+}
+
+void leg_simu::freeze(){
+	for(int i=0; i<FREEZE_SAMPLES; i++){
+		this->_ytraj.push_back(this->_init_coord_buff[1]);
+		this->_ztraj.push_back(this->_init_coord_buff[2]);
+	}
 }

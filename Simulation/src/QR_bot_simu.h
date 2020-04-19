@@ -6,7 +6,7 @@
 class QR_bot_simu{
 
 	private:
-	leg_simu _legs[4];		// Leg objects that represent the 4 legs of the bot.
+	leg_simu _legs[4];			// Leg objects that represent the 4 legs of the bot.
 	float _direction;	// Angle defining the direction which the robot is pointing to.
 	float _speed;		// Moving speed of the robot: The highest is this "speed", the further the robot will go onwards at each step.
 	float _newDir;
@@ -51,11 +51,12 @@ class QR_bot_simu{
 	//// Edit 2:
 	//// Les paramètres _direction et _speed donne une information sur l'état actuel du
 	//// système. Ainsi il est important qu'ils ne soient pas chargés avec des infos qui
-	//// concernent un état futur, mais qu'ils soient mis à jour au moment où ces infos
+	//// concernent un état futur, mais qu'ils isoient mis à jour au moment où ces infos
 	//// futures sont traitées.
 	//// edit2 target: creation des attributs "_newDir" et "_newSpd".
 	float *traj2leg();
-	void updatePos(); 
+	void updatePos(float *newCoord);
+	void moveLeg(int leg, std::array <float, 3> coord);
 
 };
 #endif

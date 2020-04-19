@@ -2,7 +2,9 @@
 #include "leg_simu.h"
 #include <math.h>
 #include <string>
+#include <iostream>
 
+using namespace std;
 
 // Builders
 
@@ -81,23 +83,28 @@ void QR_bot_simu::sequence_write(int seq){
 
 float *QR_bot_simu::traj2leg(){
 
-static float coord[4];
-// Right side - positive limit
-coord[0] = INIT_X + (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) + L_MAX*sin(this->_newDir-this->_direction))/2;
-// Right side - negative limit
-coord[1] = INIT_X - (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) + L_MAX*sin(this->_newDir-this->_direction))/2;
-// Left side - positive limit
-coord[2] = INIT_X + (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) - L_MAX*sin(this->_newDir-this->_direction))/2;
-// left side - negative limit
-coord[3] = INIT_X - (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) - L_MAX*sin(this->_newDir-this->_direction))/2;
-
+	static float coord[4];
+	// Left side - positive limit
+	coord[0] = INIT_X + (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) - L_MAX*sin(this->_newDir-this->_direction))/2;
+	// left side - negative limit
+	coord[1] = INIT_X - (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) - L_MAX*sin(this->_newDir-this->_direction))/2;
+	// Right side - positive limit
+	coord[2] = INIT_X + (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) + L_MAX*sin(this->_newDir-this->_direction))/2;
+	// Right side - negative limit
+	coord[3] = INIT_X - (2*L_MAX*this->_newSpd*sin(ANGLE_MAX) + L_MAX*sin(this->_newDir-this->_direction))/2;
 
 return coord;
 }
 
-void QR_bot_simu::moveLeg(leg_simu leg, float newX, float newY){
+void QR_bot_simu::moveLeg(int leg, std::array <float, 3> coord){
 
+	// We need to call functions that move legs to a new (x,y,z) position:
 
+	this->_legs[leg].coordBuff_write(coord);
+	this->_legs[leg].calctraj(PARABOLA);
+
+	this->_legs[leg].initCoordBuff_write(coord);
+/*
 
 	//the movement is made in 3 steps:
 	//Firstly we put the leg high to move it. We need to set the z coordinate of the leg to a new value.
@@ -113,135 +120,97 @@ void QR_bot_simu::moveLeg(leg_simu leg, float newX, float newY){
   //thirdly we put the leg on the ground by setting it to its previous location.
 	*(tempCoord+3) = INIT_Z;
 	leg.coordBuff_write(tempCoord);
-
+*/
 }
 
-void QR_bot_simu::updatePos(){
-	string step = 0;
 
-	float *newCoord = this->traj2leg();
+void QR_bot_simu::updatePos(float *newCoord){
+	// We want a big _ytraj/_ztraj buffer wher all the sequence is written for
+	// each legs.
+	for(int i=0; i<4; i++){
+		this->_legs[i].ytraj_clear();
+		this->_legs[i].ztraj_clear();
+	}
 
-	switch(this->_sequence)
-	case 0:
+	//float *newCoord = this->traj2leg();
 
-		if (this->_orientation == 1){ // If crawling forward:
+		// We will compute the trakectories that legs needs to follow to go forward.
+		// Loading the coordinates legs will have to reach.
 
-			// Front left leg moving
-			float loadingCoord[3]={*(newCoord+2), INIT_Y, INIT_Z};
-			this->_legs[0].coordBuff_write(loadingCoord);
+		// Computing to reach front position with left side:
+		this->_legs[0].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
+		this->_legs[2].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
 
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
+		// Computing trajectories legs will have to follow at first:
+		this->_legs[0].calctraj(PARABOLA);
+		this->_legs[1].freeze();
+		this->_legs[2].freeze();
+		this->_legs[3].freeze();
 
-			/*this->_legs[3]._coord_buff[0] = *newCoord;
-			this->_legs[3]._coord_buff[1] = INIT_Y;
-			this->_legs[3]._coord_buff[2] = INIT_Z;
+		// Filling the buffer of the current position reached:
+		this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+
+		this->_legs[0].freeze();
+		this->_legs[1].freeze();
+		this->_legs[2].calctraj(PARABOLA);
+		this->_legs[3].freeze();
+
+				// Filling the buffer of the current position with reached position:
+		this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+
+		// Computing to back all legs:
+		this->_legs[0].coordBuff_write({INIT_X, 0, INIT_Z});
+		this->_legs[1].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+		this->_legs[2].coordBuff_write({INIT_X, 0, INIT_Z});
+		this->_legs[3].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+
+		this->_legs[0].calctraj(FREEZE_Z);
+		this->_legs[1].calctraj(FREEZE_Z);
+		this->_legs[2].calctraj(FREEZE_Z);
+		this->_legs[3].calctraj(FREEZE_Z);
+
+		// Filling the buffer of the current position with reached position:
+		this->_legs[0].initCoordBuff_write({INIT_X, 0, INIT_Z});
+		this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+		this->_legs[2].initCoordBuff_write({INIT_X, 0, INIT_Z});
+		this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+
+		// Computing to reach front position with
+		this->_legs[1].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+		this->_legs[3].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+
+		this->_legs[0].freeze();
+		this->_legs[1].calctraj(PARABOLA);
+		this->_legs[2].freeze();
+		this->_legs[3].freeze();
+
+				// Filling the buffer of the current position with reached position:
+		this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+
+		this->_legs[0].freeze();
+		this->_legs[1].freeze();
+		this->_legs[2].freeze();
+		this->_legs[3].calctraj(PARABOLA);
+
+				// Filling the buffer of the current position with reached position:
+		this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
 
 
+		this->_legs[0].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+		this->_legs[1].coordBuff_write({INIT_X, 0, INIT_Z});
+		this->_legs[2].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+		this->_legs[3].coordBuff_write({INIT_X, 0, INIT_Z});
 
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-			loadingCoord[1]=INIT_X;
-			loadingCoord[2]=INIT_Y;
-			loadingCoord[3]=INIT_Z;
-			this->legs[0].coordBuff_write(loadingCoord);
+		this->_legs[0].calctraj(FREEZE_Z);
+		this->_legs[1].calctraj(FREEZE_Z);
+		this->_legs[2].calctraj(FREEZE_Z);
+		this->_legs[3].calctraj(FREEZE_Z);
 
-			this->_legs[1]._coord_buff[0] = *(newCoord+1);
-			this->_legs[1]._coord_buff[1] = INIT_Y;
-			this->_legs[1]._coord_buff[2] = INIT_Z;
+				// Filling the buffer of the current position with reached position:
+		this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+		this->_legs[1].initCoordBuff_write({INIT_X, 0, INIT_Z});
+		this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+		this->_legs[3].initCoordBuff_write({INIT_X, 0, INIT_Z});
 
-			this->_legs[2]._coord_buff[0] = *(newCoord+3);
-			this->_legs[2]._coord_buff[1] = INIT_Y;
-			this->_legs[2]._coord_buff[2] = INIT_Z;
-
-			this->_legs[3]._coord_buff[0] = INIT_X;
-			this->_legs[3]._coord_buff[1] = INIT_Y;
-			this->_legs[3]._coord_buff[2] = INIT_Z;
-
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-
-			this->_legs[1]._coord_buff[0] = *newCoord;
-			this->_legs[1]._coord_buff[1] = INIT_Y;
-			this->_legs[1]._coord_buff[2] = INIT_Z;
-
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-
-			this->_legs[2]._coord_buff[0] = *(newCoord+2);
-			this->_legs[2]._coord_buff[1] = INIT_Y;
-			this->_legs[2]._coord_buff[2] = INIT_Z;
-
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-
-			this->_legs[0]._coord_buff[0] = *(newCoord+3);
-			this->_legs[0]._coord_buff[1] = INIT_Y;
-			this->_legs[0]._coord_buff[2] = INIT_Z;
-
-			this->_legs[1]._coord_buff[0] = INIT_X;
-			this->_legs[1]._coord_buff[1] = INIT_Y;
-			this->_legs[1]._coord_buff[2] = INIT_Z;
-
-			this->_legs[2]._coord_buff[0] = INIT_X;
-			this->_legs[2]._coord_buff[1] = INIT_Y;
-			this->_legs[2]._coord_buff[2] = INIT_Z;
-
-			this->_legs[3]._coord_buff[0] = *(newCoord+1);
-			this->_legs[3]._coord_buff[1] = INIT_Y;
-			this->_legs[3]._coord_buff[2] = INIT_Z;
-		}
-		else{ // If crawling backwards
-
-			this->_legs[0]._coord_buff[0] = *(newCoord+3);
-			this->_legs[0]._coord_buff[1] = INIT_Y;
-			this->_legs[0]._coord_buff[2] = INIT_Z;
-
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-
-			this->_legs[3]._coord_buff[0] = *(newCoord+1);
-			this->_legs[3]._coord_buff[1] = INIT_Y;
-			this->_legs[3]._coord_buff[2] = INIT_Z;
-
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-
-			this->_legs[0]._coord_buff[0] = INIT_X;
-			this->_legs[0]._coord_buff[1] = INIT_Y;
-			this->_legs[0]._coord_buff[2] = INIT_Z;
-
-			this->_legs[1]._coord_buff[0] = *newCoord;
-			this->_legs[1]._coord_buff[1] = INIT_Y;
-			this->_legs[1]._coord_buff[2] = INIT_Z;
-
-			this->_legs[2]._coord_buff[0] = *(newCoord+2);
-			this->_legs[2]._coord_buff[1] = INIT_Y;
-			this->_legs[2]._coord_buff[2] = INIT_Z;
-
-			this->_legs[3]._coord_buff[0] = INIT_X;
-			this->_legs[3]._coord_buff[1] = INIT_Y;
-			this->_legs[3]._coord_buff[2] = INIT_Z;
-
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-
-			this->_legs[1]._coord_buff[0] = *(newCoord+1);
-			this->_legs[1]._coord_buff[1] = INIT_Y;
-			this->_legs[1]._coord_buff[2] = INIT_Z;
-
-			this->_legs[2]._coord_buff[0] = *(newCoord+3);
-			this->_legs[2]._coord_buff[1] = INIT_Y;
-			this->_legs[2]._coord_buff[2] = INIT_Z;
-
-			// AJOUTER UN DELAI QUI ATTEND QUE LA JAMBE AIT TERMINE SON DEPLACEMENT
-
-			this->_legs[0]._coord_buff[0] = *(newCoord+2);
-			this->_legs[0]._coord_buff[1] = INIT_Y;
-			this->_legs[0]._coord_buff[2] = INIT_Z;
-
-			this->_legs[1]._coord_buff[0] = INIT_X;
-			this->_legs[1]._coord_buff[1] = INIT_Y;
-			this->_legs[1]._coord_buff[2] = INIT_Z;
-
-			this->_legs[2]._coord_buff[0] = INIT_X;
-			this->_legs[2]._coord_buff[1] = INIT_Y;
-			this->_legs[2]._coord_buff[2] = INIT_Z;
-
-			this->_legs[3]._coord_buff[0] = *newCoord;
-			this->_legs[3]._coord_buff[1] = INIT_Y;
-			this->_legs[3]._coord_buff[2] = INIT_Z;*/
-		}
+		// UNE BOUCLE VIENT D'ETRE TERMINEE. FIN DE LA FONCTION.
 	}
