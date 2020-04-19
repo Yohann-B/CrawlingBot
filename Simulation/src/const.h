@@ -36,4 +36,6 @@
 #define FREEZE_Z        0
 #define PARABOLA        1
 
+#define MOVE_SEQUENCE   2
+
 #endif

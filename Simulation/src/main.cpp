@@ -39,6 +39,9 @@ int main(){
 
   float newCoord[4] = {50, -50, 50, -50};
 
+  // Chosing the sequence of the robot:
+  simubot.sequence_write(MOVE_SEQUENCE);
+
   //simubot.moveLeg(coord);
 
   simubot.updatePos(newCoord);

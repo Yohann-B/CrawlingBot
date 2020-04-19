@@ -131,86 +131,138 @@ void QR_bot_simu::updatePos(float *newCoord){
 		this->_legs[i].ytraj_clear();
 		this->_legs[i].ztraj_clear();
 	}
-
+	// In case we're using "speed-direction" control, uncoment this and remove the
+	// function argumetn:
 	//float *newCoord = this->traj2leg();
 
-		// We will compute the trakectories that legs needs to follow to go forward.
-		// Loading the coordinates legs will have to reach.
+	switch (this->_sequence){
 
-		// Computing to reach front position with left side:
-		this->_legs[0].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
-		this->_legs[2].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
+		case 1:{
+			// We will compute the trajectories that legs needs to follow to go forward.
+			// Loading the coordinates legs will have to reach.
 
-		// Computing trajectories legs will have to follow at first:
-		this->_legs[0].calctraj(PARABOLA);
-		this->_legs[1].freeze();
-		this->_legs[2].freeze();
-		this->_legs[3].freeze();
+			// Computing to reach front position with left side:
+			this->_legs[0].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			this->_legs[2].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
 
-		// Filling the buffer of the current position reached:
-		this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			// Computing trajectories legs will have to follow at first:
+			this->_legs[0].calctraj(PARABOLA);
+			this->_legs[1].freeze();
+			this->_legs[2].freeze();
+			this->_legs[3].freeze();
 
-		this->_legs[0].freeze();
-		this->_legs[1].freeze();
-		this->_legs[2].calctraj(PARABOLA);
-		this->_legs[3].freeze();
+			// Filling the buffer of the current position reached:
+			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
 
-				// Filling the buffer of the current position with reached position:
-		this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			this->_legs[0].freeze();
+			this->_legs[1].freeze();
+			this->_legs[2].calctraj(PARABOLA);
+			this->_legs[3].freeze();
 
-		// Computing to back all legs:
-		this->_legs[0].coordBuff_write({INIT_X, 0, INIT_Z});
-		this->_legs[1].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
-		this->_legs[2].coordBuff_write({INIT_X, 0, INIT_Z});
-		this->_legs[3].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			// Filling the buffer of the current position with reached position:
+			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
 
-		this->_legs[0].calctraj(FREEZE_Z);
-		this->_legs[1].calctraj(FREEZE_Z);
-		this->_legs[2].calctraj(FREEZE_Z);
-		this->_legs[3].calctraj(FREEZE_Z);
+			// Computing to back all legs:
+			this->_legs[0].coordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			this->_legs[2].coordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
 
-		// Filling the buffer of the current position with reached position:
-		this->_legs[0].initCoordBuff_write({INIT_X, 0, INIT_Z});
-		this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
-		this->_legs[2].initCoordBuff_write({INIT_X, 0, INIT_Z});
-		this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			this->_legs[0].calctraj(FREEZE_Z);
+			this->_legs[1].calctraj(FREEZE_Z);
+			this->_legs[2].calctraj(FREEZE_Z);
+			this->_legs[3].calctraj(FREEZE_Z);
 
-		// Computing to reach front position with
-		this->_legs[1].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
-		this->_legs[3].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			// Filling the buffer of the current position with reached position:
+			this->_legs[0].initCoordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			this->_legs[2].initCoordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
 
-		this->_legs[0].freeze();
-		this->_legs[1].calctraj(PARABOLA);
-		this->_legs[2].freeze();
-		this->_legs[3].freeze();
+			// Computing to reach front position with
+			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
 
-				// Filling the buffer of the current position with reached position:
-		this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[0].freeze();
+			this->_legs[1].calctraj(PARABOLA);
+			this->_legs[2].freeze();
+			this->_legs[3].freeze();
 
-		this->_legs[0].freeze();
-		this->_legs[1].freeze();
-		this->_legs[2].freeze();
-		this->_legs[3].calctraj(PARABOLA);
+			// Filling the buffer of the current position with reached position:
+			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
 
-				// Filling the buffer of the current position with reached position:
-		this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[0].freeze();
+			this->_legs[1].freeze();
+			this->_legs[2].freeze();
+			this->_legs[3].calctraj(PARABOLA);
+
+			// Filling the buffer of the current position with reached position:
+			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
 
 
-		this->_legs[0].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-		this->_legs[1].coordBuff_write({INIT_X, 0, INIT_Z});
-		this->_legs[2].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-		this->_legs[3].coordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[0].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+			this->_legs[1].coordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[2].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+			this->_legs[3].coordBuff_write({INIT_X, 0, INIT_Z});
 
-		this->_legs[0].calctraj(FREEZE_Z);
-		this->_legs[1].calctraj(FREEZE_Z);
-		this->_legs[2].calctraj(FREEZE_Z);
-		this->_legs[3].calctraj(FREEZE_Z);
+			this->_legs[0].calctraj(FREEZE_Z);
+			this->_legs[1].calctraj(FREEZE_Z);
+			this->_legs[2].calctraj(FREEZE_Z);
+			this->_legs[3].calctraj(FREEZE_Z);
 
-				// Filling the buffer of the current position with reached position:
-		this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-		this->_legs[1].initCoordBuff_write({INIT_X, 0, INIT_Z});
-		this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-		this->_legs[3].initCoordBuff_write({INIT_X, 0, INIT_Z});
+			// Filling the buffer of the current position with reached position:
+			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+			this->_legs[1].initCoordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+			this->_legs[3].initCoordBuff_write({INIT_X, 0, INIT_Z});
+		}break;
 
-		// UNE BOUCLE VIENT D'ETRE TERMINEE. FIN DE LA FONCTION.
-	}
+		case 2:{
+			// Loading next point to reach for the Front left and rear right legs:
+			this->_legs[0].coordBuff_write({INIT_X, *(newCoord), INIT_Z}); // (+) for left side
+			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z}); // (+) for right side
+
+			// Loading next point to reach for the Front right and rear left legs:
+			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z}); // (-) for right side
+			this->_legs[2].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z}); // (-) for left side
+
+			// Moving the two first forward while moving the two seconds backwards with
+			// contact with the ground:
+			this->_legs[0].calctraj(PARABOLA);
+			this->_legs[1].calctraj(FREEZE_Z);
+			this->_legs[2].calctraj(FREEZE_Z);
+			this->_legs[3].calctraj(PARABOLA);
+
+			// Filling the buffer of the current position with reached position:
+			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+
+			// Redoing the same in the opposite direction.
+
+			// Loading next point to reach for the Front left and rear right legs:
+			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z}); // (+) for right side
+			this->_legs[2].coordBuff_write({INIT_X, *(newCoord), INIT_Z}); // (+) for left side
+
+			// Loading next point to reach for the Front right and rear left legs:
+			this->_legs[0].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z}); // (-) for left side
+			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z}); // (-) for right side
+
+			// Moving the two first forward while moving the two seconds backwards with
+			// contact with the ground:
+			this->_legs[0].calctraj(FREEZE_Z);
+			this->_legs[1].calctraj(PARABOLA);
+			this->_legs[2].calctraj(PARABOLA);
+			this->_legs[3].calctraj(FREEZE_Z);
+
+			// Filling the buffer of the current position with reached position:
+			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
+			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+
+		}break;
+}
+	// UNE BOUCLE VIENT D'ETRE TERMINEE. FIN DE LA FONCTION.
+}
