@@ -20,8 +20,12 @@ class leg_simu{
 	int _h_speed;			// Characterize the speed of the body-hip servo (ms since it is used by delay function).
 	int _v_speed;			// Characterize the speed of the hip-femur and femur-tibia servo.
 
+	std::vector <float> _xtraj;
 	std::vector <float> _ytraj;
 	std::vector <float> _ztraj;
+	std::vector <float> _angleA;
+	std::vector <float> _angleB;
+	std::vector <float> _angleC;
 
 	public:
 	//Cons-des
@@ -52,14 +56,20 @@ class leg_simu{
 	void ztraj_write(std::vector <float> ztraj);
 
 	// Cleaner
+	void xtraj_clear();
 	void ytraj_clear();
 	void ztraj_clear();
+	void angleA_clear();
+	void angleB_clear();
+	void angleC_clear();
 
 	// Methods
-	std::array <float, 3> conv2angle(float *cartesian);
+	//std::array <float, 3> conv2angle();
+	void conv2angle();
 	std::array <int, 3> conv2reg(float *angle);
   // We use "saveCoord()" to write the computed positions to a file:
 	void saveCoord(std::fstream &file);
+	void saveAngle(std::fstream &file);
   void calctraj(int choice);
 	void freeze();
 };

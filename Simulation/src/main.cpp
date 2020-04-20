@@ -28,10 +28,15 @@ int main(){
   QR_bot_simu simubot(legStack);
 
   // Create and open data files:
-  fstream FL_coord("dataOut/FL_coord.csv", fstream::out);
-  fstream FR_coord("dataOut/FR_coord.csv", fstream::out);
-  fstream RL_coord("dataOut/RL_coord.csv", fstream::out);
-  fstream RR_coord("dataOut/RR_coord.csv", fstream::out);
+  fstream FL_coord("dataOut/coord/FL_coord.csv", fstream::out);
+  fstream FR_coord("dataOut/coord/FR_coord.csv", fstream::out);
+  fstream RL_coord("dataOut/coord/RL_coord.csv", fstream::out);
+  fstream RR_coord("dataOut/coord/RR_coord.csv", fstream::out);
+
+  fstream FL_angle("dataOut/angle/FL_angle.csv", fstream::out);
+  fstream FR_angle("dataOut/angle/FR_angle.csv", fstream::out);
+  fstream RL_angle("dataOut/angle/RL_angle.csv", fstream::out);
+  fstream RR_angle("dataOut/angle/RR_angle.csv", fstream::out);
 
   // Start moving:
 
@@ -50,6 +55,12 @@ int main(){
   simubot.legs_read()[1].saveCoord(FR_coord);
   simubot.legs_read()[2].saveCoord(RL_coord);
   simubot.legs_read()[3].saveCoord(RR_coord);
+
+  simubot.legs_read()[0].saveAngle(FL_angle);
+  simubot.legs_read()[1].saveAngle(FR_angle);
+  simubot.legs_read()[2].saveAngle(RL_angle);
+  simubot.legs_read()[3].saveAngle(RR_angle);
+
 
   return 0;
 }

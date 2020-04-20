@@ -128,9 +128,16 @@ void QR_bot_simu::updatePos(float *newCoord){
 	// We want a big _ytraj/_ztraj buffer wher all the sequence is written for
 	// each legs.
 	for(int i=0; i<4; i++){
+		this->_legs[i].xtraj_clear();
 		this->_legs[i].ytraj_clear();
 		this->_legs[i].ztraj_clear();
+
+		this->_legs[i].angleA_clear();
+		this->_legs[i].angleB_clear();
+		this->_legs[i].angleC_clear();
 	}
+
+
 	// In case we're using "speed-direction" control, uncoment this and remove the
 	// function argumetn:
 	//float *newCoord = this->traj2leg();
@@ -142,8 +149,8 @@ void QR_bot_simu::updatePos(float *newCoord){
 			// Loading the coordinates legs will have to reach.
 
 			// Computing to reach front position with left side:
-			this->_legs[0].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
-			this->_legs[2].coordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			this->_legs[0].coordBuff_write({*(newCoord), INIT_Y, INIT_Z});
+			this->_legs[2].coordBuff_write({*(newCoord), INIT_Y, INIT_Z});
 
 			// Computing trajectories legs will have to follow at first:
 			this->_legs[0].calctraj(PARABOLA);
@@ -152,7 +159,7 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].freeze();
 
 			// Filling the buffer of the current position reached:
-			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			this->_legs[0].initCoordBuff_write({*(newCoord), INIT_Y, INIT_Z});
 
 			this->_legs[0].freeze();
 			this->_legs[1].freeze();
@@ -160,13 +167,13 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].freeze();
 
 			// Filling the buffer of the current position with reached position:
-			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
+			this->_legs[2].initCoordBuff_write({*(newCoord), INIT_Y, INIT_Z});
 
 			// Computing to back all legs:
-			this->_legs[0].coordBuff_write({INIT_X, 0, INIT_Z});
-			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
-			this->_legs[2].coordBuff_write({INIT_X, 0, INIT_Z});
-			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			this->_legs[0].coordBuff_write({0, INIT_Y, INIT_Z});
+			this->_legs[1].coordBuff_write({*(newCoord+3), INIT_Y, INIT_Z});
+			this->_legs[2].coordBuff_write({0, INIT_Y, INIT_Z});
+			this->_legs[3].coordBuff_write({*(newCoord+3), INIT_Y, INIT_Z});
 
 			this->_legs[0].calctraj(FREEZE_Z);
 			this->_legs[1].calctraj(FREEZE_Z);
@@ -174,14 +181,14 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].calctraj(FREEZE_Z);
 
 			// Filling the buffer of the current position with reached position:
-			this->_legs[0].initCoordBuff_write({INIT_X, 0, INIT_Z});
-			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
-			this->_legs[2].initCoordBuff_write({INIT_X, 0, INIT_Z});
-			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			this->_legs[0].initCoordBuff_write({0, INIT_Y, INIT_Z});
+			this->_legs[1].initCoordBuff_write({*(newCoord+3), INIT_Y, INIT_Z});
+			this->_legs[2].initCoordBuff_write({0, INIT_Y, INIT_Z});
+			this->_legs[3].initCoordBuff_write({*(newCoord+3), INIT_Y, INIT_Z});
 
 			// Computing to reach front position with
-			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
-			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[1].coordBuff_write({*(newCoord+2), INIT_Y, INIT_Z});
+			this->_legs[3].coordBuff_write({*(newCoord+2), INIT_Y, INIT_Z});
 
 			this->_legs[0].freeze();
 			this->_legs[1].calctraj(PARABOLA);
@@ -189,7 +196,7 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].freeze();
 
 			// Filling the buffer of the current position with reached position:
-			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[1].initCoordBuff_write({*(newCoord+2), INIT_Y, INIT_Z});
 
 			this->_legs[0].freeze();
 			this->_legs[1].freeze();
@@ -197,13 +204,13 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].calctraj(PARABOLA);
 
 			// Filling the buffer of the current position with reached position:
-			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[3].initCoordBuff_write({*(newCoord+2), INIT_Y, INIT_Z});
 
 
-			this->_legs[0].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-			this->_legs[1].coordBuff_write({INIT_X, 0, INIT_Z});
-			this->_legs[2].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-			this->_legs[3].coordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[0].coordBuff_write({*(newCoord+1), INIT_Y, INIT_Z});
+			this->_legs[1].coordBuff_write({0, INIT_Y, INIT_Z});
+			this->_legs[2].coordBuff_write({*(newCoord+1), INIT_Y, INIT_Z});
+			this->_legs[3].coordBuff_write({0, INIT_Y, INIT_Z});
 
 			this->_legs[0].calctraj(FREEZE_Z);
 			this->_legs[1].calctraj(FREEZE_Z);
@@ -211,20 +218,20 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].calctraj(FREEZE_Z);
 
 			// Filling the buffer of the current position with reached position:
-			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-			this->_legs[1].initCoordBuff_write({INIT_X, 0, INIT_Z});
-			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-			this->_legs[3].initCoordBuff_write({INIT_X, 0, INIT_Z});
+			this->_legs[0].initCoordBuff_write({*(newCoord+1), INIT_Y, INIT_Z});
+			this->_legs[1].initCoordBuff_write({0, INIT_Y, INIT_Z});
+			this->_legs[2].initCoordBuff_write({*(newCoord+1), INIT_Y, INIT_Z});
+			this->_legs[3].initCoordBuff_write({0, INIT_Y, INIT_Z});
 		}break;
 
 		case 2:{
 			// Loading next point to reach for the Front left and rear right legs:
-			this->_legs[0].coordBuff_write({INIT_X, *(newCoord), INIT_Z}); // (+) for left side
-			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z}); // (+) for right side
+			this->_legs[0].coordBuff_write({*(newCoord), INIT_Y, INIT_Z}); // (+) for left side
+			this->_legs[3].coordBuff_write({*(newCoord+2), INIT_Y, INIT_Z}); // (+) for right side
 
 			// Loading next point to reach for the Front right and rear left legs:
-			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z}); // (-) for right side
-			this->_legs[2].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z}); // (-) for left side
+			this->_legs[1].coordBuff_write({*(newCoord+3), INIT_Y, INIT_Z}); // (-) for right side
+			this->_legs[2].coordBuff_write({*(newCoord+1), INIT_Y, INIT_Z}); // (-) for left side
 
 			// Moving the two first forward while moving the two seconds backwards with
 			// contact with the ground:
@@ -234,20 +241,20 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].calctraj(PARABOLA);
 
 			// Filling the buffer of the current position with reached position:
-			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
-			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
-			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
+			this->_legs[0].initCoordBuff_write({*(newCoord), INIT_Y, INIT_Z});
+			this->_legs[1].initCoordBuff_write({*(newCoord+3), INIT_Y, INIT_Z});
+			this->_legs[2].initCoordBuff_write({*(newCoord+1), INIT_Y, INIT_Z});
+			this->_legs[3].initCoordBuff_write({*(newCoord+2), INIT_Y, INIT_Z});
 
 			// Redoing the same in the opposite direction.
 
 			// Loading next point to reach for the Front left and rear right legs:
-			this->_legs[1].coordBuff_write({INIT_X, *(newCoord+2), INIT_Z}); // (+) for right side
-			this->_legs[2].coordBuff_write({INIT_X, *(newCoord), INIT_Z}); // (+) for left side
+			this->_legs[1].coordBuff_write({*(newCoord+2), INIT_Y, INIT_Z}); // (+) for right side
+			this->_legs[2].coordBuff_write({*(newCoord), INIT_Y, INIT_Z}); // (+) for left side
 
 			// Loading next point to reach for the Front right and rear left legs:
-			this->_legs[0].coordBuff_write({INIT_X, *(newCoord+1), INIT_Z}); // (-) for left side
-			this->_legs[3].coordBuff_write({INIT_X, *(newCoord+3), INIT_Z}); // (-) for right side
+			this->_legs[0].coordBuff_write({*(newCoord+1), INIT_Y, INIT_Z}); // (-) for left side
+			this->_legs[3].coordBuff_write({*(newCoord+3), INIT_Y, INIT_Z}); // (-) for right side
 
 			// Moving the two first forward while moving the two seconds backwards with
 			// contact with the ground:
@@ -257,12 +264,23 @@ void QR_bot_simu::updatePos(float *newCoord){
 			this->_legs[3].calctraj(FREEZE_Z);
 
 			// Filling the buffer of the current position with reached position:
-			this->_legs[0].initCoordBuff_write({INIT_X, *(newCoord+1), INIT_Z});
-			this->_legs[1].initCoordBuff_write({INIT_X, *(newCoord+2), INIT_Z});
-			this->_legs[2].initCoordBuff_write({INIT_X, *(newCoord), INIT_Z});
-			this->_legs[3].initCoordBuff_write({INIT_X, *(newCoord+3), INIT_Z});
+			this->_legs[0].initCoordBuff_write({*(newCoord+1), INIT_Y, INIT_Z});
+			this->_legs[1].initCoordBuff_write({*(newCoord+2), INIT_Y, INIT_Z});
+			this->_legs[2].initCoordBuff_write({*(newCoord), INIT_Y, INIT_Z});
+			this->_legs[3].initCoordBuff_write({*(newCoord+3), INIT_Y, INIT_Z});
 
 		}break;
-}
-	// UNE BOUCLE VIENT D'ETRE TERMINEE. FIN DE LA FONCTION.
+	}
+	// A STEP HAS BEEN COMPLETED. END OF THE FUNCTION.
+
+	// FOR THE ROBOT, THE FOLLOWING IS USELESS, SINCE IT WILL TAKE THE COMPUTED
+	// POSITIONS AND DIRECTLY COMPUTE THE ANGLES TO LOAD THE BUFFER. THIS IS used
+	// FOR CHECKING IF EVERYTHING WORKS FINE.
+
+	// Computing the angles that allow the leg to reach the position:
+	this->_legs[0].conv2angle();
+	this->_legs[1].conv2angle();
+	this->_legs[2].conv2angle();
+	this->_legs[3].conv2angle();
+
 }
