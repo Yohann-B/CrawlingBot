@@ -6,9 +6,9 @@
 #define INIT_SEQ        1
 
 #define INIT_X          0
-#define INIT_Y          80
+#define INIT_Y          100
 #define INIT_Z          -50
-#define HIGH_Z          -20
+#define HIGH_Z          10
 
 #define ANGLE_MAX       100
 #define L_MAX           asin(ANGLE_MAX)*LENGTH_A
@@ -36,6 +36,6 @@
 #define FREEZE_Z        0
 #define PARABOLA        1
 
-#define MOVE_SEQUENCE   1
+#define MOVE_SEQUENCE   2
 
 #endif
