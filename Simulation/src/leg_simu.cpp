@@ -179,8 +179,8 @@ void leg_simu::conv2angle(){
 		float R = sqrt(this->_xtraj[i]*this->_xtraj[i]+this->_ytraj[i]*this->_ytraj[i]);
 		float l = sqrt(this->_ztraj[i]*this->_ztraj[i]+(R-LENGTH_A)*(R-LENGTH_A));
 
-		std::cout<<R<<"   "<<l<<std::endl;
-		_angleA.push_back(acos(this->_xtraj[i]/this->_ytraj[i])*180/M_PI);
+
+		_angleA.push_back(90 - acos(this->_xtraj[i]/this->_ytraj[i])*180/M_PI);
 		_angleB.push_back((acos(-this->_ztraj[i]/l)+acos((LENGTH_C*LENGTH_C-LENGTH_B*LENGTH_B-l*l)/(-2*LENGTH_B*l)))*180/M_PI);
 		_angleC.push_back(acos((l*l-LENGTH_C*LENGTH_C-LENGTH_B*LENGTH_B)/(-2*LENGTH_C*LENGTH_B))*180/M_PI);
 	}
