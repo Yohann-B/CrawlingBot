@@ -2,6 +2,7 @@
 #include <string>
 #include <math.h>
 #include <iostream>
+#include <iomanip>
 
 leg_simu::leg_simu(){
 
@@ -180,7 +181,7 @@ void leg_simu::conv2angle(){
 		float l = sqrt(this->_ztraj[i]*this->_ztraj[i]+(R-LENGTH_A)*(R-LENGTH_A));
 
 
-		_angleA.push_back(90 - acos(this->_xtraj[i]/this->_ytraj[i])*180/M_PI);
+		_angleA.push_back(atan(this->_xtraj[i]/this->_ytraj[i])*180/M_PI);
 		_angleB.push_back((acos(-this->_ztraj[i]/l)+acos((LENGTH_C*LENGTH_C-LENGTH_B*LENGTH_B-l*l)/(-2*LENGTH_B*l)))*180/M_PI);
 		_angleC.push_back(acos((l*l-LENGTH_C*LENGTH_C-LENGTH_B*LENGTH_B)/(-2*LENGTH_C*LENGTH_B))*180/M_PI);
 	}
@@ -200,14 +201,14 @@ std::array <int, 3> leg_simu::conv2reg(float *angle){
 void leg_simu::saveCoord(std::fstream &file){
 	int nbr_elem =this->_xtraj.size();
 	for(int i=0; i<nbr_elem; i++){
-			file<<this->_xtraj.at(i)<<","<<this->_ytraj.at(i)<<","<<this->_ztraj.at(i)<<"\n";
+			file<<std::setprecision(10)<<this->_xtraj.at(i)<<","<<std::setprecision(10)<<this->_ytraj.at(i)<<","<<std::setprecision(10)<<this->_ztraj.at(i)<<"\n";
 	}
 }
 
 void leg_simu::saveAngle(std::fstream &file){
 	int nbr_elem =this->_angleA.size();
 	for(int i=0; i<nbr_elem; i++){
-			file<<this->_angleA.at(i)<<","<<this->_angleB.at(i)<<","<<this->_angleC.at(i)<<"\n";
+			file<<std::setprecision(10)<<this->_angleA.at(i)<<","<<std::setprecision(10)<<this->_angleB.at(i)<<","<<std::setprecision(10)<<this->_angleC.at(i)<<"\n";
 	}
 }
 

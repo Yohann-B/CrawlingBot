@@ -130,10 +130,6 @@ def draw_leg(draw_V, draw_H, line_points):
                 draw_V[n].create_line(DRAW_WIN_XSIZE-line_points[n][0][1][i], DRAW_WIN_YSIZE/2-line_points[n][0][2][i], DRAW_WIN_XSIZE-line_points[n][0][3][i], DRAW_WIN_YSIZE/2-line_points[n][0][4][i])
                 draw_H[n].create_line(DRAW_WIN_XSIZE, DRAW_WIN_YSIZE/2, DRAW_WIN_XSIZE-line_points[n][1][0][i], DRAW_WIN_YSIZE/2-line_points[n][1][1][i])
 
-                draw_V[n].create_line(DRAW_WIN_XSIZE-100, 0, DRAW_WIN_XSIZE-100, 150)
-                draw_H[n].create_line(DRAW_WIN_XSIZE-100, 0, DRAW_WIN_XSIZE-100, 150)
-                draw_V[n].create_line(DRAW_WIN_XSIZE-97, 0, DRAW_WIN_XSIZE-97, 150)
-                draw_H[n].create_line(DRAW_WIN_XSIZE-97, 0, DRAW_WIN_XSIZE-97, 150)
             else:
                 # A-part of leg:
                 draw_V[n].create_line(0, DRAW_WIN_YSIZE/2, line_points[n][0][0][i], DRAW_WIN_YSIZE/2)
@@ -143,10 +139,7 @@ def draw_leg(draw_V, draw_H, line_points):
                 draw_V[n].create_line(line_points[n][0][1][i], DRAW_WIN_YSIZE/2-line_points[n][0][2][i], line_points[n][0][3][i], DRAW_WIN_YSIZE/2-line_points[n][0][4][i])
 
                 draw_H[n].create_line(0, DRAW_WIN_YSIZE/2, line_points[n][1][0][i], DRAW_WIN_YSIZE/2-line_points[n][1][1][i])
-                draw_V[n].create_line(100, 0, 100, 150)
-                draw_H[n].create_line(100, 0, 100, 150)
-                draw_V[n].create_line(97, 0, 97, 150)
-                draw_H[n].create_line(97, 0, 97, 150)
+
 
             draw_V[n].update()
             draw_H[n].update()
