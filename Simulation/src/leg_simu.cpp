@@ -9,7 +9,16 @@ leg_simu::leg_simu(){
 }
 
 
-leg_simu::leg_simu(int *pin, bool orientation){
+leg_simu::leg_simu(int *pin, bool orientation, input &param){
+	param.find_key("LENGTH_A", _length_A, 49.5);
+	param.find_key("LENGTH_B", _length_B, 60);
+	param.find_key("LENGTH_C", _length_C, 99);
+	param.find_key("INIT_X", _init_X, 0);
+	param.find_key("INIT_Y", _init_Y, 100);
+	param.find_key("INIT_Z", _init_Z, -50);
+	param.find_key("MAX_Z", _max_Z, 10);
+	param.find_key("TILT_ANGLE", _tilt_angle, 90);
+	param.find_key("TRAJ_LEG_SAMPLES", _leg_traj_samples, 99);
 
 	_orientation = orientation;
 	_h_speed = H_SPEED;
@@ -21,15 +30,15 @@ leg_simu::leg_simu(int *pin, bool orientation){
 	}
 
 	// Buffer initialization with initiation position:
-	_init_coord_buff[0] = INIT_X;
-	_init_coord_buff[1] = INIT_Y;
-	_init_coord_buff[2] = INIT_Z;
+	_init_coord_buff[0] = this->_init_X;
+	_init_coord_buff[1] = this->_init_Y;
+	_init_coord_buff[2] = this->_init_Z;
 
 	float R = sqrt(_coord_buff[0]*_coord_buff[0]+_coord_buff[1]*_coord_buff[1]);
 
-	_angle_buff[0] = acos((LENGTH_A*LENGTH_A+LENGTH_B*LENGTH_B-LENGTH_C*LENGTH_C)/(2*LENGTH_A*LENGTH_B));	//// AJOUTER LA CONVERSION
-	_angle_buff[1] = atan(_coord_buff[2]/(R-LENGTH_A))+acos((LENGTH_B*LENGTH_B+_coord_buff[2]*_coord_buff[2]+(R-LENGTH_A)*(R-LENGTH_A)-LENGTH_C*LENGTH_C)/(2*LENGTH_B*sqrt(_coord_buff[2]*_coord_buff[2]+(R-LENGTH_A)*(R-LENGTH_A))));
-	_angle_buff[2] = acos((LENGTH_B+LENGTH_C-_coord_buff[2]*_coord_buff[2]-(R-LENGTH_A)*(R-LENGTH_A))/(2*LENGTH_B*LENGTH_C));
+	_angle_buff[0] = acos((this->_length_A*this->_length_A+this->_length_B*this->_length_B-this->_length_C*this->_length_C)/(2*this->_length_A*this->_length_B));	//// AJOUTER LA CONVERSION
+	_angle_buff[1] = atan(_coord_buff[2]/(R-this->_length_A))+acos((this->_length_B*this->_length_B+_coord_buff[2]*_coord_buff[2]+(R-this->_length_A)*(R-this->_length_A)-this->_length_C*this->_length_C)/(2*this->_length_B*sqrt(_coord_buff[2]*_coord_buff[2]+(R-this->_length_A)*(R-this->_length_A))));
+	_angle_buff[2] = acos((this->_length_B+this->_length_C-_coord_buff[2]*_coord_buff[2]-(R-this->_length_A)*(R-this->_length_A))/(2*this->_length_B*this->_length_C));
 
 	_register_buff[0] = MIN_REG+_angle_buff[0]/180*(MAX_REG-MIN_REG);	//// AJOUTER LA CONVERSION
 	_register_buff[1] = MIN_REG+_angle_buff[1]/180*(MAX_REG-MIN_REG);
@@ -77,6 +86,18 @@ std::vector <float> leg_simu::ytraj_read(){
 
 std::vector <float> leg_simu::ztraj_read(){
 	return this->_ztraj;
+}
+
+float leg_simu::init_X_read(){
+	return this->_init_X;
+}
+
+float leg_simu::init_Y_read(){
+	return this->_init_Y;
+}
+
+float leg_simu::init_Z_read(){
+	return this->_init_Z;
 }
 
 // Writers:
@@ -127,6 +148,7 @@ void leg_simu::ztraj_write(std::vector <float> ztraj){
 	_ztraj = ztraj;
 }
 
+
 // cleaner
 
 void leg_simu::xtraj_clear(){
@@ -165,9 +187,9 @@ std::array <float, 3> leg_simu::conv2angle(){
 	std::array <float, 3> angle = {90, 90, 90};
 	float R = sqrt(_coord_buff[0]*_coord_buff[0]+_coord_buff[1]*_coord_buff[1]);
 
-	angle[0] = acos((LENGTH_A*LENGTH_A+LENGTH_B*LENGTH_B-LENGTH_C*LENGTH_C)/(2*LENGTH_A*LENGTH_B));
-	angle[1] = atan(this->_coord_buff[2]/(R-LENGTH_A))+acos((LENGTH_B*LENGTH_B+this->_coord_buff[2]*this->_coord_buff[2]+(R-LENGTH_A)*(R-LENGTH_A)-LENGTH_C*LENGTH_C)/(2*LENGTH_B*sqrt(this->_coord_buff[2]*this->_coord_buff[2]+(R-LENGTH_A)*(R-LENGTH_A))));
-	angle[2] = acos((LENGTH_B+LENGTH_C-this->_coord_buff[2]*this->_coord_buff[2]-(R-LENGTH_A)*(R-LENGTH_A))/(2*LENGTH_B*LENGTH_C));
+	angle[0] = acos((this->_length_A*this->_length_A+this->_length_B*this->_length_B-this->_length_C*this->_length_C)/(2*this->_length_A*this->_length_B));
+	angle[1] = atan(this->_coord_buff[2]/(R-this->_length_A))+acos((this->_length_B*this->_length_B+this->_coord_buff[2]*this->_coord_buff[2]+(R-this->_length_A)*(R-this->_length_A)-this->_length_C*this->_length_C)/(2*this->_length_B*sqrt(this->_coord_buff[2]*this->_coord_buff[2]+(R-this->_length_A)*(R-this->_length_A))));
+	angle[2] = acos((this->_length_B+this->_length_C-this->_coord_buff[2]*this->_coord_buff[2]-(R-this->_length_A)*(R-this->_length_A))/(2*this->_length_B*this->_length_C));
 
 	return angle;
 }*/
@@ -178,12 +200,12 @@ void leg_simu::conv2angle(){
 	for(int i=0; i<nbr_elem; i++){
 
 		float R = sqrt(this->_xtraj[i]*this->_xtraj[i]+this->_ytraj[i]*this->_ytraj[i]);
-		float l = sqrt(this->_ztraj[i]*this->_ztraj[i]+(R-LENGTH_A)*(R-LENGTH_A));
+		float l = sqrt(this->_ztraj[i]*this->_ztraj[i]+(R-this->_length_A)*(R-this->_length_A));
 
 
 		_angleA.push_back(atan(this->_xtraj[i]/this->_ytraj[i])*180/M_PI);
-		_angleB.push_back((acos(-this->_ztraj[i]/l)+acos((LENGTH_C*LENGTH_C-LENGTH_B*LENGTH_B-l*l)/(-2*LENGTH_B*l)))*180/M_PI);
-		_angleC.push_back(acos((l*l-LENGTH_C*LENGTH_C-LENGTH_B*LENGTH_B)/(-2*LENGTH_C*LENGTH_B))*180/M_PI);
+		_angleB.push_back((acos(-this->_ztraj[i]/l)+acos((this->_length_C*this->_length_C-this->_length_B*this->_length_B-l*l)/(-2*this->_length_B*l)))*180/M_PI);
+		_angleC.push_back(acos((l*l-this->_length_C*this->_length_C-this->_length_B*this->_length_B)/(-2*this->_length_C*this->_length_B))*180/M_PI);
 	}
 
 }
@@ -237,38 +259,58 @@ void leg_simu::calctraj(int choice){
 
 	if(choice == PARABOLA){
 		if (direction == 1){
-			for(int i = 0; i<LEG_RES_TRAJ; i++){
-				xtraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1));
-				ytraj.push_back(INIT_Y);
-				ztraj.push_back(HIGH_Z+(INIT_Z-HIGH_Z)/(l_gap*l_gap/4)*xtraj[i]*xtraj[i]);
+			for(int i = 0; i<this->_leg_traj_samples; i++){
+				xtraj.push_back(-l_gap/2 + i*l_gap/(this->_leg_traj_samples-1));
+				ytraj.push_back(this->_init_Y);
+				ztraj.push_back(this->_max_Z+(this->_init_Z-this->_max_Z)/(l_gap*l_gap/4)*xtraj[i]*xtraj[i]);
 
 				xtraj[i] = xtraj[i] + x_gap;
 			}
 		}
 		else{
-			for(int i = LEG_RES_TRAJ-1; i>=0; i--){
-				xtraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1));
-				ytraj.push_back(INIT_Y);
-				ztraj.push_back(HIGH_Z+(INIT_Z-HIGH_Z)/(l_gap*l_gap/4)*xtraj[LEG_RES_TRAJ-1-i]*xtraj[LEG_RES_TRAJ-1-i]);
+			for(int i = this->_leg_traj_samples-1; i>=0; i--){
+				xtraj.push_back(-l_gap/2 + i*l_gap/(this->_leg_traj_samples-1));
+				ytraj.push_back(this->_init_Y);
+				ztraj.push_back(this->_max_Z+(this->_init_Z-this->_max_Z)/(l_gap*l_gap/4)*xtraj[this->_leg_traj_samples-1-i]*xtraj[this->_leg_traj_samples-1-i]);
 
-				xtraj[LEG_RES_TRAJ-1-i] = xtraj[LEG_RES_TRAJ-1-i] + x_gap;
+				xtraj[this->_leg_traj_samples-1-i] = xtraj[this->_leg_traj_samples-1-i] + x_gap;
 			}
 		}
 	}
 
 	if(choice == FREEZE_Z){
 		if (direction == 1){
-			for(int i = 0; i<LEG_RES_TRAJ; i++){
-				xtraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1) + x_gap);
-				ytraj.push_back(INIT_Y);
+			for(int i = 0; i<this->_leg_traj_samples; i++){
+				xtraj.push_back(-l_gap/2 + i*l_gap/(this->_leg_traj_samples-1) + x_gap);
+				ytraj.push_back(this->_init_Y);
 				ztraj.push_back(_init_coord_buff[2]);
 			}
 		}
 		else{
-			for(int i = LEG_RES_TRAJ-1; i>=0; i--){
-				xtraj.push_back(-l_gap/2 + i*l_gap/(LEG_RES_TRAJ-1) + x_gap);
-				ytraj.push_back(INIT_Y);
+			for(int i = this->_leg_traj_samples-1; i>=0; i--){
+				xtraj.push_back(-l_gap/2 + i*l_gap/(this->_leg_traj_samples-1) + x_gap);
+				ytraj.push_back(this->_init_Y);
 				ztraj.push_back(_init_coord_buff[2]);
+			}
+		}
+	}
+
+	if(choice == TILTED_PARABOLA){
+		if (direction == 1){
+			for(int i = 0; i<this->_leg_traj_samples; i++){
+				xtraj.push_back(-l_gap/2 + i*l_gap/(this->_leg_traj_samples-1));
+				ztraj.push_back(this->_max_Z+(this->_init_Z-this->_max_Z)/(l_gap*l_gap/4)*xtraj[i]*xtraj[i]);
+				ytraj.push_back(this->_init_Y + (ztraj[i]-this->_init_Z)/tan(this->_tilt_angle*M_PI/180));
+
+				xtraj[i] = xtraj[i] + x_gap;
+			}
+		}
+		else{
+			for(int i = this->_leg_traj_samples-1; i>=0; i--){
+				xtraj.push_back(-l_gap/2 + i*l_gap/(this->_leg_traj_samples-1));
+				ztraj.push_back(this->_max_Z+(this->_init_Z-this->_max_Z)/(l_gap*l_gap/4)*xtraj[this->_leg_traj_samples-1-i]*xtraj[this->_leg_traj_samples-1-i]);
+				ytraj.push_back(this->_init_Y + (ztraj[i]-this->_init_Z)/tan(this->_tilt_angle*M_PI/180));
+				xtraj[this->_leg_traj_samples-1-i] = xtraj[this->_leg_traj_samples-1-i] + x_gap;
 			}
 		}
 	}
@@ -279,7 +321,7 @@ void leg_simu::calctraj(int choice){
 }
 
 void leg_simu::freeze(){
-	for(int i=0; i<FREEZE_SAMPLES; i++){
+	for(int i=0; i<this->_leg_traj_samples; i++){
 		this->_xtraj.push_back(this->_init_coord_buff[0]);
 		this->_ytraj.push_back(this->_init_coord_buff[1]);
 		this->_ztraj.push_back(this->_init_coord_buff[2]);

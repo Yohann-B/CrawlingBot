@@ -1,5 +1,6 @@
 #include "leg_simu.h"
 #include "QR_bot_simu.h"
+#include "input.h"
 #include <iostream>
 #include <fstream>
 
@@ -11,17 +12,50 @@ void bufferPrinter(float *buff, int elem);
 void bufferPrinter(int *buff, int elem);
 */
 
-int main(){
+int main(int argn, char *argv[]){
+
+  // Reading parameter file :
+  string dataIn_path = "./dataIn/";
+  std::string par_file_name;
+
+  try{
+    if(argn > 2)
+      throw "Incorrect input parameter.\nSee Readme for usage.";
+
+    else if(argn < 2)
+      par_file_name = dataIn_path + "param.txt";
+
+    else
+      par_file_name = dataIn_path + argv[0];
+  }
+  catch(const char *err){
+    std::cerr << "\nError: " << err << std::endl;
+    return -1;
+  }
+
+  input arg(par_file_name);
+
+  try{
+    arg.read();
+  }
+  catch(const char *err){
+    std::cerr << "\nError: " << err << std::endl;
+    return -1;
+  }
+
+  int seq_id = 1;
+  arg.find_key("MOVE_SEQUENCE", seq_id, 1);
+
   // Create leg objects:
   int fl_pin[3] = {0, 1, 2};
   int fr_pin[3] = {3, 4, 5};
   int rl_pin[3] = {6, 7, 8};
   int rr_pin[3] = {9, 10, 11};
 
-  leg_simu fl_leg(fl_pin, FL_OR);
-  leg_simu fr_leg(fr_pin, FR_OR);
-  leg_simu rl_leg(rl_pin, RL_OR);
-  leg_simu rr_leg(rr_pin, RR_OR);
+  leg_simu fl_leg(fl_pin, FL_OR, arg);
+  leg_simu fr_leg(fr_pin, FR_OR, arg);
+  leg_simu rl_leg(rl_pin, RL_OR, arg);
+  leg_simu rr_leg(rr_pin, RR_OR, arg);
   leg_simu legStack[4] = {fl_leg, fr_leg, rl_leg, rr_leg};
 
   // Create robot object:
@@ -45,7 +79,7 @@ int main(){
   float newCoord[4] = {50, -50, 50, -50};
 
   // Chosing the sequence of the robot:
-  simubot.sequence_write(MOVE_SEQUENCE);
+  simubot.sequence_write(seq_id);
 
   //simubot.moveLeg(coord);
 
@@ -60,6 +94,7 @@ int main(){
   simubot.legs_read()[1].saveAngle(FR_angle);
   simubot.legs_read()[2].saveAngle(RL_angle);
   simubot.legs_read()[3].saveAngle(RR_angle);
+
 
 
   return 0;

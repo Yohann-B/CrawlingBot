@@ -2,11 +2,11 @@
 #define _LEG_SIMU_H_
 
 #include <string>
-#include "const.h"
 #include <fstream>
 #include <vector>
 #include <array>
-
+#include "input.h"
+#include "const.h"
 
 class leg_simu{
 	private:
@@ -27,10 +27,23 @@ class leg_simu{
 	std::vector <float> _angleB;
 	std::vector <float> _angleC;
 
+	// Leg's parameters
+	float _length_A;
+	float _length_B;
+	float _length_C;
+
+	float _init_X;
+	float _init_Y;
+	float _init_Z;
+	float _max_Z;
+
+	float _tilt_angle;
+	int _leg_traj_samples;
+
 	public:
 	//Cons-des
 	leg_simu();
-	leg_simu(int *pin, bool orientation);
+	leg_simu(int *pin, bool orientation, input &param);
 	~leg_simu();
 
 	// Readers
@@ -43,6 +56,9 @@ class leg_simu{
 	int vSpeed_read();
 	std::vector <float> ytraj_read();
 	std::vector <float> ztraj_read();
+	float init_X_read();
+	float init_Y_read();
+	float init_Z_read();
 
 	// Writers
 	void coordBuff_write(std::array <float, 3> coordinates);

@@ -6,7 +6,8 @@ OPTCPU = -Wall -O3
 MAIN = src/main.o
 ROBOT = src/QR_bot_simu.o
 LEG = src/leg_simu.o
-OFILES = $(MAIN) $(ROBOT) $(LEG)
+INPUT = src/input.o
+OFILES = $(MAIN) $(ROBOT) $(LEG) $(INPUT)
 
 #data FILES
 DATA_COORD = dataOut/coord/FL_coord.csv dataOut/coord/FR_coord.csv dataOut/coord/RL_coord.csv dataOut/coord/RR_coord.csv
@@ -23,7 +24,8 @@ $(ROBOT) : src/QR_bot_simu.cpp
 	$(CC) $(OPTCPU) -o $@ -c $<
 $(LEG) : src/leg_simu.cpp
 	$(CC) $(OPTCPU) -o $@ -c $<
-
+$(INPUT) : src/input.cpp
+	$(CC) $(OPTCPU) -o $@ -c $<
 
 #RULES TO MAKE THE FINAL EXECUTABLES
 $(EXEC) : $(OFILES)
